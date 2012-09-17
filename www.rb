@@ -7,16 +7,17 @@ enable :sessions
 
 cur_dir = BASE
 
-get "/list" do
+get "/list/*" do
+  cur_dir = "/" + params[:splat][0]
   d = Dir.new(cur_dir)
   files = Array.new()
-
   d.each { |f|
       if f =~ /.*t.*/
-          files << f
+          a = {"name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
+          files << a
       end
   }
-  puts JSON.dump(session)
+#  puts JSON.dump(session)
   erb :dir, :locals => { :cur_dir => cur_dir, :files => files, :session_id => session[:session_id] }
 end
 

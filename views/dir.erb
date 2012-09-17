@@ -4,7 +4,13 @@
 		<ol>
 			<% files.each { |f| %>
 			<li>
-			<%= f %> = <%= session_id %>
+			<% if f["is_dir"] %>
+				<a href="/list<%= f["name"] %>">
+					<%= f["name"] %> = <%= session_id %>
+				</a>
+			<% else %>
+				<%= f["name"] %> = <%= session_id %>
+			<% end %>
 			</li>
 			<% } %>
 		</ol>
