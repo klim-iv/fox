@@ -1,0 +1,12 @@
+<html>
+	<body>
+		<h2><%= cur_dir %></h2>
+		<ol>
+			<% files.each { |f| %>
+			<li>
+			<%= f %> = <%= session_id %>
+			</li>
+			<% } %>
+		</ol>
+	</body>
+</html>

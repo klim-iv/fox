@@ -1,7 +1,24 @@
 require 'rubygems'
 require 'sinatra'
+require 'json'
 
 BASE = File.expand_path("~")
+enable :sessions
+
+cur_dir = BASE
+
+get "/list" do
+  d = Dir.new(cur_dir)
+  files = Array.new()
+
+  d.each { |f|
+      if f =~ /.*t.*/
+          files << f
+      end
+  }
+  puts JSON.dump(session)
+  erb :dir, :locals => { :cur_dir => cur_dir, :files => files, :session_id => session[:session_id] }
+end
 
 get '/' do
   home = Dir.new(BASE)
