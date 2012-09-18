@@ -2,6 +2,15 @@ require 'rubygems'
 require 'sinatra'
 require 'json'
 
+convert = {
+  "avi" => Proc.new {|file, session|
+      puts "cd #{File.dirname(file)} && rm -Rf #{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec mpeg4 -flags +aic+mv4 #{session[:session_id]}.mp4"
+#      IO.popen("cd #{File.dirname(file)} && rm -Rf #{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec mpeg4 -flags +aic+mv4 #{session[:session_id]}.mp4") { |out|
+#        redirect to("/video/#{session[:session_id]}.mp4")
+#      }
+    },
+}
+
 BASE = File.expand_path("~")
 enable :sessions
 
@@ -12,12 +21,16 @@ get "/list/*" do
   d = Dir.new(cur_dir)
   files = Array.new()
   d.each { |f|
-      if f =~ /.*t.*/
-          a = {"name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
-          files << a
-      end
+        a = {"name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
+        puts f
+        puts f.gsub(/.*[.]([^.]*)$/, '\1')
+        convert.has_key?(f.gsub(/.*[.]([^.]*)$/, '\1'))
+        if not a["is_dir"] && convert.has_key?(f.gsub(/.*[.]([^.]*)$/, '\1'))
+          a["url"] = "/convert/#{f}"
+        end
+        files << a
   }
-#  puts JSON.dump(session)
+
   erb :dir, :locals => { :cur_dir => cur_dir, :files => files, :session_id => session[:session_id] }
 end
 

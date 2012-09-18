@@ -6,10 +6,14 @@
 			<li>
 			<% if f["is_dir"] %>
 				<a href="/list<%= f["name"] %>">
-					<%= f["name"] %> = <%= session_id %>
+					<%= f["name"] %>
+				</a>
+			<% elsif f.has_key?("url") %>
+				<a href="<%= f["url"] %>">
+					<%= f["name"] %>
 				</a>
 			<% else %>
-				<%= f["name"] %> = <%= session_id %>
+				<%= f["name"] %>
 			<% end %>
 			</li>
 			<% } %>
