@@ -2,19 +2,25 @@ require 'rubygems'
 require 'sinatra'
 require 'json'
 
+enable :sessions
+
+BASE = File.expand_path("~")
+
+cur_dir = BASE
+
 convert = {
   "avi" => Proc.new {|file, session|
-      puts "cd #{File.dirname(file)} && rm -Rf #{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec mpeg4 -flags +aic+mv4 #{session[:session_id]}.mp4"
-#      IO.popen("cd #{File.dirname(file)} && rm -Rf #{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec mpeg4 -flags +aic+mv4 #{session[:session_id]}.mp4") { |out|
-#        redirect to("/video/#{session[:session_id]}.mp4")
-#      }
+      cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec mpeg4 -flags +aic+mv4 /tmp/#{session[:session_id]}.mp4"
+      puts cmd
+
+      redirect_url = ""
+      IO.popen(cmd) { |out|
+      }
+
+      "/video/#{session[:session_id]}.mp4"
     },
 }
 
-BASE = File.expand_path("~")
-enable :sessions
-
-cur_dir = BASE
 
 get "/list/*" do
   cur_dir = "/" + params[:splat][0]
@@ -22,11 +28,12 @@ get "/list/*" do
   files = Array.new()
   d.each { |f|
         a = {"name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
-        puts f
-        puts f.gsub(/.*[.]([^.]*)$/, '\1')
-        convert.has_key?(f.gsub(/.*[.]([^.]*)$/, '\1'))
-        if not a["is_dir"] && convert.has_key?(f.gsub(/.*[.]([^.]*)$/, '\1'))
-          a["url"] = "/convert/#{f}"
+        ext = f.match(/.*[.]([^.]*)$/)
+        if ext != nil
+          ext = ext[1]
+          if not a["is_dir"] and convert.has_key?(ext)
+            a["url"] = "/convert/#{ext}/#{cur_dir}/#{f}"
+          end
         end
         files << a
   }
@@ -34,33 +41,19 @@ get "/list/*" do
   erb :dir, :locals => { :cur_dir => cur_dir, :files => files, :session_id => session[:session_id] }
 end
 
-get '/' do
-  home = Dir.new(BASE)
-  code = "<ol>"
-  home.each { |f|
-      if f =~ /.*avi$/
-          code += "<li><a href=\"convert/#{f}\" />#{f}</video></li>"
-      end
-  }
-  code += "</ol>"
-  home.close
 
-  code
+get '/' do
+  redirect to("/list/#{BASE}")
 end
 
 
-get '/convert/*' do |file|
-  code = ""
-  if file =~ /.*avi$/
-      cBASE = BASE.gsub(/[ ]/, '\ ')
-      IO.popen("cd #{cBASE} && rm -Rf output.mp4 && ffmpeg -i \"#{file}\" -vcodec mpeg4 -flags +aic+mv4 output.mp4") { |out|
-        #code += "<li><video controls=\"controls\" type=\"video/mpeg\" preload=\"none\"><source  src=\"video/output.mp4\" /></video></li>"
-        redirect to('/video/output.mp4')
-      }
-  end
+get '/convert/:convert/*' do |file|
+  redirect_url = convert[params[:convert]].call("/" + params[:splat][0], session)
+  puts redirect_url
+  redirect to(redirect_url)
 end
 
 
 get '/video/*' do |file|
-  send_file BASE + '/' + file
+  send_file '/tmp/' + file
 end
