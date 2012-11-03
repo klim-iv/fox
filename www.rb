@@ -19,6 +19,10 @@ convert = {
 
       "/video/#{session[:session_id]}.mp4"
     },
+  "djvu" => Proc.new {|file, session|
+
+      "/file/#{file}"
+    },
 }
 
 
@@ -56,4 +60,8 @@ end
 
 get '/video/*' do |file|
   send_file '/tmp/' + file
+end
+
+get '/file/*' do |file|
+  send_file '/' + file
 end
