@@ -2,6 +2,10 @@ require 'rubygems'
 require 'sinatra'
 require 'json'
 
+configure do
+  set :public_folder, File.dirname(__FILE__) + '/public'
+end
+
 enable :sessions
 
 BASE = File.expand_path("~")
@@ -9,19 +13,39 @@ BASE = File.expand_path("~")
 cur_dir = BASE
 
 convert = {
-  "avi" => Proc.new {|file, session|
-      cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec mpeg4 -flags +aic+mv4 /tmp/#{session[:session_id]}.mp4"
-      puts cmd
+  "avi" => {
+    "icon" => "icon-facetime-video",
+    "proc" => Proc.new {|file, session|
+        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec mpeg4 -flags +aic+mv4 /tmp/#{session[:session_id]}.mp4"
+        puts cmd
 
-      redirect_url = ""
-      IO.popen(cmd) { |out|
+        redirect_url = ""
+        IO.popen(cmd) { |out|
+        }
+
+        "/video/#{session[:session_id]}.mp4"
       }
-
-      "/video/#{session[:session_id]}.mp4"
     },
-  "djvu" => Proc.new {|file, session|
+  "pdf" => {
+    "icon" => "icon-book",
+    "proc" => Proc.new {|file, session|
 
-      "/file/#{file}"
+        "/file/#{file}"
+      }
+    },
+  "djvu" => {
+    "icon" => "icon-book",
+    "proc" => Proc.new {|file, session|
+
+        "/file/#{file}"
+      }
+    },
+  "mp3" => {
+    "icon" => "icon-headphones",
+    "proc" => Proc.new {|file, session|
+
+        "/file/#{file}"
+      }
     },
 }
 
@@ -30,13 +54,25 @@ get "/list/*" do
   cur_dir = "/" + params[:splat][0]
   d = Dir.new(cur_dir)
   files = Array.new()
+  i = 0
   d.each { |f|
-        a = {"name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
+        i += 1
+        a = {"id" => "id" + i.to_s, "name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
+        if File.directory?(cur_dir + "/" + f)
+          a["icon"] = "icon-folder-open"
+        else
+          a["icon"] = "icon-question-sign"
+        end
+
         ext = f.match(/.*[.]([^.]*)$/)
         if ext != nil
           ext = ext[1]
           if not a["is_dir"] and convert.has_key?(ext)
             a["url"] = "/convert/#{ext}/#{cur_dir}/#{f}"
+
+            if convert[ext].has_key?("icon")
+              a["icon"] = convert[ext]["icon"]
+            end
           end
         end
         files << a
@@ -52,7 +88,7 @@ end
 
 
 get '/convert/:convert/*' do |file|
-  redirect_url = convert[params[:convert]].call("/" + params[:splat][0], session)
+  redirect_url = convert[params[:convert]]["proc"].call("/" + params[:splat][0], session)
   puts redirect_url
   redirect to(redirect_url)
 end
