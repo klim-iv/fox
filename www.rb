@@ -16,7 +16,15 @@ convert = {
   "avi" => {
     "icon" => "icon-facetime-video",
     "proc" => Proc.new {|file, session|
-        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec mpeg4 -flags +aic+mv4 /tmp/#{session[:session_id]}.mp4"
+        cmd = "ffprobe \"#{file}\" 2>&1"
+        codec = "mpeg4"
+        IO.popen(cmd).each_line { |line|
+            if line =~ /Stream .*:.*Video: mpeg4/
+               codec = "copy"
+            end
+        }
+
+        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -flags +aic+mv4 /tmp/#{session[:session_id]}.mp4"
         puts cmd
 
         redirect_url = ""
@@ -43,7 +51,15 @@ convert = {
   "mkv" => {
     "icon" => "icon-facetime-video",
     "proc" => Proc.new {|file, session|
-        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec copy /tmp/#{session[:session_id]}.mp4"
+        cmd = "ffprobe \"#{file}\" 2>&1"
+        codec = "mpeg4"
+        IO.popen(cmd).each_line { |line|
+            if line =~ /Stream .*:.*Video: .264/
+               codec = "copy"
+            end
+        }
+
+        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -acodec copy /tmp/#{session[:session_id]}.mp4"
         puts cmd
 
         redirect_url = ""
