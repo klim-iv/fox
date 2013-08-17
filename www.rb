@@ -40,6 +40,19 @@ convert = {
         "/file/#{file}"
       }
     },
+  "mkv" => {
+    "icon" => "icon-facetime-video",
+    "proc" => Proc.new {|file, session|
+        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec copy /tmp/#{session[:session_id]}.mp4"
+        puts cmd
+
+        redirect_url = ""
+        IO.popen(cmd) { |out|
+        }
+
+        "/file//tmp/#{session[:session_id]}.mp4"
+      }
+    },
   "mp3" => {
     "icon" => "icon-headphones",
     "proc" => Proc.new {|file, session|
