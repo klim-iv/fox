@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'sinatra'
 require 'json'
+require 'fox_utils.rb'
 
 configure do
   set :public_folder, File.dirname(__FILE__) + '/public'
@@ -18,13 +19,9 @@ convert = {
     "proc" => Proc.new {|file, session|
         cmd = "ffprobe \"#{file}\" 2>&1"
         codec = "mpeg4"
-        IO.popen(cmd).each_line { |line|
-            if line =~ /Stream .*:.*Video: mpeg4/
-               codec = "copy"
-            end
-        }
+        threads = processor_count
 
-        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -flags +aic+mv4 /tmp/#{session[:session_id]}.mp4"
+        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -flags +aic+mv4 -threads #{threads} /tmp/#{session[:session_id]}.mp4"
         puts cmd
 
         redirect_url = ""
@@ -76,6 +73,41 @@ convert = {
         "/file/#{file}"
       }
     },
+  "jpg" => {
+    "icon" => "icon-picture",
+    "proc" => Proc.new {|file, session|
+
+        "/file/#{file}"
+      }
+    },
+  "jpeg" => {
+    "icon" => "icon-picture",
+    "proc" => Proc.new {|file, session|
+
+        "/file/#{file}"
+      }
+    },
+  "gif" => {
+    "icon" => "icon-picture",
+    "proc" => Proc.new {|file, session|
+
+        "/file/#{file}"
+      }
+    },
+  "png" => {
+    "icon" => "icon-picture",
+    "proc" => Proc.new {|file, session|
+
+        "/file/#{file}"
+      }
+    },
+  "html" => {
+    "icon" => "icon-file",
+    "proc" => Proc.new {|file, session|
+
+        "/file/#{file}"
+      }
+    },
 }
 
 
@@ -87,6 +119,20 @@ get "/list/*" do
   d.each { |f|
         i += 1
         a = {"id" => "id" + i.to_s, "name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
+
+        #redefine operator for sort files
+        def a.<=>(o)
+          if self["is_dir"] == o["is_dir"]
+              return self["name"] <=> o["name"]
+          else
+              if self["is_dir"] and not o["is_dir"]
+                  return -1
+              elsif not self["is_dir"] and o["is_dir"]
+                  return 1
+              end
+          end
+        end
+
         if File.directory?(cur_dir + "/" + f)
           a["icon"] = "icon-folder-open"
         else
@@ -106,7 +152,7 @@ get "/list/*" do
         end
         files << a
   }
-
+  files = files.sort
   erb :dir, :locals => { :cur_dir => cur_dir, :files => files, :session_id => session[:session_id] }
 end
 
