@@ -55,8 +55,9 @@ convert = {
                codec = "copy"
             end
         }
+        threads = processor_count
 
-        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -acodec copy /tmp/#{session[:session_id]}.mp4"
+        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -acodec copy -threads #{threads} /tmp/#{session[:session_id]}.mp4"
         puts cmd
 
         redirect_url = ""
