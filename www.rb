@@ -1,12 +1,13 @@
 require 'rubygems'
 require 'sinatra'
 require 'json'
-require 'fox_utils.rb'
+require './fox_utils.rb'
 
 configure do
   set :public_folder, File.dirname(__FILE__) + '/public'
 end
 
+set :bind, '0.0.0.0'
 enable :sessions
 
 BASE = File.expand_path("~")
@@ -163,8 +164,8 @@ get '/' do
 end
 
 
-get '/convert/:convert/*' do |file|
-  redirect_url = convert[params[:convert]]["proc"].call("/" + params[:splat][0], session)
+get '/convert/:convert/*' do |cnv, file|
+  redirect_url = convert[cnv]["proc"].call("/" + file, session)
   puts redirect_url
   redirect to(redirect_url)
 end

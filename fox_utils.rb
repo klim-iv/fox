@@ -3,7 +3,7 @@ def processor_count
   when /darwin9/
     `hwprefs cpu_count`.to_i
   when /darwin/
-    (hwprefs_available? ? `hwprefs thread_count` : `sysctl -n hw.ncpu`).to_i
+    (`sysctl -n hw.ncpu`).to_i
   when /linux|cygwin/
     `grep -c ^processor /proc/cpuinfo`.to_i
   when /(net|open|free)bsd/
