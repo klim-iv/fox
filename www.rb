@@ -17,7 +17,7 @@ cur_dir = BASE
 convert = {
   "avi" => {
     "icon" => "icon-facetime-video",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
         cmd = "ffprobe \"#{file}\" 2>&1"
         codec = "mpeg4"
         threads = processor_count
@@ -34,21 +34,21 @@ convert = {
     },
   "pdf" => {
     "icon" => "icon-book",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
 
         "/file/#{file}"
       }
     },
   "djvu" => {
     "icon" => "icon-book",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
 
         "/file/#{file}"
       }
     },
   "mkv" => {
     "icon" => "icon-facetime-video",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
         cmd = "ffprobe \"#{file}\" 2>&1"
         codec = "mpeg4"
         IO.popen(cmd).each_line { |line|
@@ -70,42 +70,42 @@ convert = {
     },
   "mp3" => {
     "icon" => "icon-headphones",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
 
         "/file/#{file}"
       }
     },
   "jpg" => {
     "icon" => "icon-picture",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
 
         "/file/#{file}"
       }
     },
   "jpeg" => {
     "icon" => "icon-picture",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
 
         "/file/#{file}"
       }
     },
   "gif" => {
     "icon" => "icon-picture",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
 
         "/file/#{file}"
       }
     },
   "png" => {
     "icon" => "icon-picture",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
 
         "/file/#{file}"
       }
     },
   "html" => {
     "icon" => "icon-file",
-    "proc" => Proc.new {|file, session|
+    "proc" => Proc.new {|file, session, ua = ""|
 
         "/file/#{file}"
       }
@@ -165,7 +165,8 @@ end
 
 
 get '/convert/:convert/*' do |cnv, file|
-  redirect_url = convert[cnv]["proc"].call("/" + file, session)
+  puts "UA = #{request.user_agent}"
+  redirect_url = convert[cnv]["proc"].call("/" + file, session, request.user_agent)
   puts redirect_url
   redirect to(redirect_url)
 end
