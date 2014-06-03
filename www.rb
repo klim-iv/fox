@@ -22,7 +22,7 @@ convert = {
         codec = "mpeg4"
         threads = processor_count
 
-        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -flags +aic+mv4 -threads #{threads} /tmp/#{session[:session_id]}.mp4"
+        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -strict -2 -flags +aic+mv4 -threads #{threads} /tmp/#{session[:session_id]}.mp4"
         puts cmd
 
         redirect_url = ""
