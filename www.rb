@@ -1,7 +1,10 @@
 require 'rubygems'
 require 'sinatra'
+require 'sinatra/support'
 require 'json'
 require './fox_utils.rb'
+
+register Sinatra::UserAgentHelpers
 
 configure do
   set :public_folder, File.dirname(__FILE__) + '/public'
@@ -18,24 +21,28 @@ convert = {
   "avi" => {
     "icon" => "icon-facetime-video",
     "proc" => Proc.new {|file, session, ua = ""|
-        cmd = "ffprobe \"#{file}\" 2>&1"
-        codec = "mpeg4"
-        threads = processor_count
+        a = UserAgent.new ua
+        if a.ipad?
+            cmd = "ffprobe \"#{file}\" 2>&1"
+            codec = "mpeg4"
+            threads = processor_count
 
-        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -strict -2 -flags +aic+mv4 -threads #{threads} /tmp/#{session[:session_id]}.mp4"
-        puts cmd
+            cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -strict -2 -flags +aic+mv4 -threads #{threads} /tmp/#{session[:session_id]}.mp4"
+            puts cmd
 
-        redirect_url = ""
-        IO.popen(cmd) { |out|
-        }
+            redirect_url = ""
+            IO.popen(cmd) { |out|
+            }
 
-        "/video/#{session[:session_id]}.mp4"
+            "/video/#{session[:session_id]}.mp4"
+        else
+            "/file/#{file}"
+        end
       }
     },
   "pdf" => {
     "icon" => "icon-book",
     "proc" => Proc.new {|file, session, ua = ""|
-
         "/file/#{file}"
       }
     },
@@ -49,23 +56,28 @@ convert = {
   "mkv" => {
     "icon" => "icon-facetime-video",
     "proc" => Proc.new {|file, session, ua = ""|
-        cmd = "ffprobe \"#{file}\" 2>&1"
-        codec = "mpeg4"
-        IO.popen(cmd).each_line { |line|
-            if line =~ /Stream .*:.*Video: .264/
-               codec = "copy"
-            end
-        }
-        threads = processor_count
+        a = UserAgent.new ua
+        if a.ipad?
+            cmd = "ffprobe \"#{file}\" 2>&1"
+            codec = "mpeg4"
+            IO.popen(cmd).each_line { |line|
+                if line =~ /Stream .*:.*Video: .264/
+                   codec = "copy"
+                end
+            }
+            threads = processor_count
 
-        cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -acodec copy -threads #{threads} /tmp/#{session[:session_id]}.mp4"
-        puts cmd
+            cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -acodec copy -threads #{threads} /tmp/#{session[:session_id]}.mp4"
+            puts cmd
 
-        redirect_url = ""
-        IO.popen(cmd) { |out|
-        }
+            redirect_url = ""
+            IO.popen(cmd) { |out|
+            }
 
-        "/file//tmp/#{session[:session_id]}.mp4"
+            "/file//tmp/#{session[:session_id]}.mp4"
+        else
+            "/file/#{file}"
+        end
       }
     },
   "mp3" => {
