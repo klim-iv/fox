@@ -8,6 +8,7 @@ register Sinatra::UserAgentHelpers
 
 configure do
   set :public_folder, File.dirname(__FILE__) + '/public'
+#  mime_type :avi, "video/mpeg"
 end
 
 set :bind, '0.0.0.0'
@@ -36,7 +37,14 @@ convert = {
 
             "/video/#{session[:session_id]}.mp4"
         else
-            "/file/#{file}"
+            cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.avi && ln -s \"#{file}\" /tmp/#{session[:session_id]}.avi"
+            puts cmd
+
+            redirect_url = ""
+            IO.popen(cmd) { |out|
+            }
+
+            "/video-env/#{session[:session_id]}.avi"
         end
       }
     },
@@ -74,9 +82,16 @@ convert = {
             IO.popen(cmd) { |out|
             }
 
-            "/file//tmp/#{session[:session_id]}.mp4"
+            "/video/#{session[:session_id]}.mp4"
         else
-            "/file/#{file}"
+            cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.avi && ln -s \"#{file}\" /tmp/#{session[:session_id]}.mkv"
+            puts cmd
+
+            redirect_url = ""
+            IO.popen(cmd) { |out|
+            }
+
+            "/video-env/#{session[:session_id]}.mkv"
         end
       }
     },
@@ -183,6 +198,10 @@ get '/convert/:convert/*' do |cnv, file|
   redirect to(redirect_url)
 end
 
+
+get '/video-env/*' do |file|
+  erb :video, :locals => { :file_name => "/video/#{file}" }
+end
 
 get '/video/*' do |file|
   send_file '/tmp/' + file
