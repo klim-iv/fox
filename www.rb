@@ -44,7 +44,7 @@ convert = {
             IO.popen(cmd) { |out|
             }
 
-            "/video-env/#{session[:session_id]}.avi"
+            "/video/#{session[:session_id]}.avi"
         end
       }
     },
@@ -93,6 +93,13 @@ convert = {
 
             "/video-env/#{session[:session_id]}.mkv"
         end
+      }
+    },
+  "mp4" => {
+    "icon" => "icon-facetime-video",
+    "proc" => Proc.new {|file, session, ua = ""|
+
+        "/file/#{file}"
       }
     },
   "mp3" => {
