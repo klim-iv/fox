@@ -21,6 +21,13 @@ cur_dir = BASE
 convert = {
   "avi" => {
     "icon" => "icon-facetime-video",
+    "make_url" => Proc.new { |file, cur_dir, ext, ua|
+        if ua =~ /VLC.*LibVLC/ or ua =~ /Chromium/
+            "/file/#{cur_dir}/#{file}"
+        else
+            "/convert/#{ext}/#{cur_dir}/#{file}"
+        end
+    },
     "proc" => Proc.new {|file, session, ua = ""|
         a = UserAgent.new ua
         if a.ipad?
@@ -179,7 +186,11 @@ get "/list/*" do
         if ext != nil
           ext = ext[1]
           if not a["is_dir"] and convert.has_key?(ext)
-            a["url"] = "/convert/#{ext}/#{cur_dir}/#{f}"
+            if convert[ext].has_key?("make_url")
+              a["url"] = convert[ext]["make_url"].call(f, cur_dir, ext, request.user_agent)
+            else
+              a["url"] = "/convert/#{ext}/#{cur_dir}/#{f}"
+            end
 
             if convert[ext].has_key?("icon")
               a["icon"] = convert[ext]["icon"]
