@@ -176,8 +176,10 @@ get "/list/*" do
           end
         end
 
+        a["share-url"] = "/file/#{cur_dir}/#{f}"
         if File.directory?(cur_dir + "/" + f)
           a["icon"] = "icon-folder-open"
+          a["share-url"] = ""
         else
           a["icon"] = "icon-question-sign"
         end

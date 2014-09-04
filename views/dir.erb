@@ -46,6 +46,11 @@
 						<tr>
 							<td>
 								<div class="span9">
+									<% if f["share-url"].length > 0 %>
+									<a href="<%= f["share-url"] %>"
+										<i class="icon-share"></i>
+									</a>
+									<% end %>
 									<% if f.has_key?("icon") %>
 									<i class="<%= f["icon"] %>"></i>
 									<% end %>
