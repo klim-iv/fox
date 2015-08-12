@@ -1,8 +1,11 @@
 require 'rubygems'
+require 'bundler/setup'
 require 'sinatra'
 require 'sinatra/support'
 require 'json'
 require './fox_utils.rb'
+
+Bundler.require
 
 register Sinatra::UserAgentHelpers
 
