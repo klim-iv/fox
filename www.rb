@@ -3,6 +3,8 @@ require 'bundler/setup'
 require 'sinatra'
 require 'sinatra/support'
 require 'json'
+require 'uri'
+
 require './fox_utils.rb'
 
 Bundler.require
@@ -231,5 +233,18 @@ get '/video/*' do |file|
 end
 
 get '/file/*' do |file|
-  send_file '/' + file
+  puts "FILE NAME = #{file}"
+  ext = File.extname('/' + file)
+
+  if ext.length > 0
+    ext = ext[1..-1]
+  end
+  ext = convert.key(ext)
+
+  send_file '/' + file, :length => File.stat('/' + file).size, :filename => File.basename('/' + file)
+end
+
+get // do
+  puts "CATCH request.path_info = #{request.path_info}"
+  return 404
 end
