@@ -4,6 +4,7 @@ require 'sinatra'
 require 'sinatra/support'
 require 'json'
 require 'uri'
+require 'digest'
 
 require './fox_utils.rb'
 
@@ -34,29 +35,42 @@ convert = {
         end
     },
     "proc" => Proc.new {|file, session, ua = ""|
+        output_file_name = "/tmp/#{Digest::MD5.file(file).hexdigest}"
         a = UserAgent.new ua
         if a.ipad?
-            cmd = "ffprobe \"#{file}\" 2>&1"
+            output_file_name += ".mp4"
+
             codec = "mpeg4"
             threads = processor_count
 
-            cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -strict -2 -flags +aic+mv4 -threads #{threads} /tmp/#{session[:session_id]}.mp4"
-            puts cmd
+            cmd = ""
+            if not File.exist?(output_file_name)
+                cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{file}\" -vcodec #{codec} -strict -2 -flags +aic+mv4 -threads #{threads} #{output_file_name}"
+                puts cmd
+            else
+                puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
+            end
 
             redirect_url = ""
             IO.popen(cmd) { |out|
             }
 
-            "/video/#{session[:session_id]}.mp4"
+            "/video/#{output_file_name}"
         else
-            cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.avi && ln -s \"#{file}\" /tmp/#{session[:session_id]}.avi"
-            puts cmd
+            output_file_name += ".avi"
+
+            if not File.exist?(output_file_name)
+                cmd = "cd \"#{File.dirname(file)}\" && ln -s \"#{file}\" #{output_file_name}"
+                puts cmd
+            else
+                puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
+            end
 
             redirect_url = ""
             IO.popen(cmd) { |out|
             }
 
-            "/video/#{session[:session_id]}.avi"
+            "/video/#{output_file_name}"
         end
       }
     },
@@ -76,8 +90,11 @@ convert = {
   "mkv" => {
     "icon" => "icon-facetime-video",
     "proc" => Proc.new {|file, session, ua = ""|
+        output_file_name = "/tmp/#{Digest::MD5.file(file).hexdigest}"
         a = UserAgent.new ua
         if a.ipad?
+            output_file_name += ".mp4"
+
             cmd = "ffprobe \"#{file}\" 2>&1"
             codec = "mpeg4"
             IO.popen(cmd).each_line { |line|
@@ -87,23 +104,36 @@ convert = {
             }
             threads = processor_count
 
-            cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.mp4 && ffmpeg -i \"#{file}\" -vcodec #{codec} -acodec copy -threads #{threads} /tmp/#{session[:session_id]}.mp4"
-            puts cmd
+            cmd = ""
+            if not File.exist?(output_file_name)
+                cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{file}\" -vcodec #{codec} -acodec copy -threads #{threads} #{output_file_name}"
+                puts cmd
+            else
+                puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
+            end
+
 
             redirect_url = ""
             IO.popen(cmd) { |out|
             }
 
-            "/video/#{session[:session_id]}.mp4"
+            "/video/#{output_file_name}"
         else
-            cmd = "cd \"#{File.dirname(file)}\" && rm -Rf /tmp/#{session[:session_id]}.avi && ln -s \"#{file}\" /tmp/#{session[:session_id]}.mkv"
-            puts cmd
+            output_file_name += ".mkv"
+
+            cmd = ""
+            if not File.exist?(output_file_name)
+                cmd = "cd \"#{File.dirname(file)}\" && ln -s \"#{file}\" #{output_file_name}"
+                puts cmd
+            else
+                puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
+            end
 
             redirect_url = ""
             IO.popen(cmd) { |out|
             }
 
-            "/video-env/#{session[:session_id]}.mkv"
+            "/video/#{output_file_name}"
         end
       }
     },
@@ -229,7 +259,7 @@ get '/video-env/*' do |file|
 end
 
 get '/video/*' do |file|
-  send_file '/tmp/' + file
+  send_file '/' + file
 end
 
 get '/file/*' do |file|
