@@ -29,13 +29,14 @@ convert = {
     "icon" => "icon-facetime-video",
     "make_url" => Proc.new { |file, cur_dir, ext, ua|
         if ua =~ /VLC.*LibVLC/ or ua =~ /Chromium/
-            "/file/#{cur_dir}/#{file}"
+            "/file/#{URI.encode(cur_dir + '/' + file)}"
         else
-            "/convert/#{ext}/#{cur_dir}/#{file}"
+            "/convert/#{ext}/#{URI.encode(cur_dir + '/' + file)}"
         end
     },
-    "proc" => Proc.new {|file, session, ua = ""|
-        output_file_name = "/tmp/#{Digest::MD5.file(file).hexdigest}"
+    "proc" => Proc.new {|file_en, session, ua = ""|
+        file = URI.decode(file_en)
+        output_file_name = "/tmp/#{Digest::MD5.hexdigest(file)}"
         a = UserAgent.new ua
         if a.ipad?
             output_file_name += ".mp4"
@@ -43,9 +44,18 @@ convert = {
             codec = "mpeg4"
             threads = processor_count
 
-            cmd = ""
             if not File.exist?(output_file_name)
-                cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{file}\" -vcodec #{codec} -strict -2 -flags +aic+mv4 -threads #{threads} #{output_file_name}"
+                begin
+                    File.delete(output_file_name + ".link")
+                rescue
+                end
+
+                begin
+                    File.symlink(file, output_file_name + ".link")
+                rescue
+                end
+
+                cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i #{output_file_name + ".link"} -vcodec #{codec} -strict -2 -flags +aic+mv4 -threads #{threads} #{output_file_name}"
                 puts cmd
             else
                 puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
@@ -55,42 +65,38 @@ convert = {
             IO.popen(cmd) { |out|
             }
 
-            "/video/#{output_file_name}"
+            "/video/#{URI.encode(output_file_name)}"
         else
             output_file_name += ".avi"
 
             if not File.exist?(output_file_name)
-                cmd = "cd \"#{File.dirname(file)}\" && ln -s \"#{file}\" #{output_file_name}"
-                puts cmd
+                File.symlink(file, output_file_name)
             else
                 puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
             end
 
-            redirect_url = ""
-            IO.popen(cmd) { |out|
-            }
-
-            "/video/#{output_file_name}"
+            "/video/#{URI.encode(output_file_name)}"
         end
       }
     },
   "pdf" => {
     "icon" => "icon-book",
     "proc" => Proc.new {|file, session, ua = ""|
-        "/file/#{file}"
+        "/file/#{URI.encode(file)}"
       }
     },
   "djvu" => {
     "icon" => "icon-book",
     "proc" => Proc.new {|file, session, ua = ""|
 
-        "/file/#{file}"
+        "/file/#{URI.encode(file)}"
       }
     },
   "mkv" => {
     "icon" => "icon-facetime-video",
-    "proc" => Proc.new {|file, session, ua = ""|
-        output_file_name = "/tmp/#{Digest::MD5.file(file).hexdigest}"
+    "proc" => Proc.new {|file_en, session, ua = ""|
+        file = URI.decode(file_en)
+        output_file_name = "/tmp/#{Digest::MD5.hexdigest(file)}"
         a = UserAgent.new ua
         if a.ipad?
             output_file_name += ".mp4"
@@ -104,9 +110,18 @@ convert = {
             }
             threads = processor_count
 
-            cmd = ""
             if not File.exist?(output_file_name)
-                cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{file}\" -vcodec #{codec} -acodec copy -threads #{threads} #{output_file_name}"
+                begin
+                    File.delete(output_file_name + ".link")
+                rescue
+                end
+
+                begin
+                    File.symlink(file, output_file_name + ".link")
+                rescue
+                end
+
+                cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{output_file_name + ".link"}\" -vcodec #{codec} -acodec copy -threads #{threads} #{output_file_name}"
                 puts cmd
             else
                 puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
@@ -117,23 +132,17 @@ convert = {
             IO.popen(cmd) { |out|
             }
 
-            "/video/#{output_file_name}"
+            "/video/#{URI.encode(output_file_name)}"
         else
             output_file_name += ".mkv"
 
-            cmd = ""
             if not File.exist?(output_file_name)
-                cmd = "cd \"#{File.dirname(file)}\" && ln -s \"#{file}\" #{output_file_name}"
-                puts cmd
+                File.symlink(file, output_file_name)
             else
                 puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
             end
 
-            redirect_url = ""
-            IO.popen(cmd) { |out|
-            }
-
-            "/video/#{output_file_name}"
+            "/video/#{URI.encode(output_file_name)}"
         end
       }
     },
@@ -141,49 +150,49 @@ convert = {
     "icon" => "icon-facetime-video",
     "proc" => Proc.new {|file, session, ua = ""|
 
-        "/file/#{file}"
+        "/file/#{URI.encode(file)}"
       }
     },
   "mp3" => {
     "icon" => "icon-headphones",
     "proc" => Proc.new {|file, session, ua = ""|
 
-        "/file/#{file}"
+        "/file/#{URI.encode(file)}"
       }
     },
   "jpg" => {
     "icon" => "icon-picture",
     "proc" => Proc.new {|file, session, ua = ""|
 
-        "/file/#{file}"
+        "/file/#{URI.encode(file)}"
       }
     },
   "jpeg" => {
     "icon" => "icon-picture",
     "proc" => Proc.new {|file, session, ua = ""|
 
-        "/file/#{file}"
+        "/file/#{URI.encode(file)}"
       }
     },
   "gif" => {
     "icon" => "icon-picture",
     "proc" => Proc.new {|file, session, ua = ""|
 
-        "/file/#{file}"
+        "/file/#{URI.encode(file)}"
       }
     },
   "png" => {
     "icon" => "icon-picture",
     "proc" => Proc.new {|file, session, ua = ""|
 
-        "/file/#{file}"
+        "/file/#{URI.encode(file)}"
       }
     },
   "html" => {
     "icon" => "icon-file",
     "proc" => Proc.new {|file, session, ua = ""|
 
-        "/file/#{file}"
+        "/file/#{URI.encode(file)}"
       }
     },
 }
@@ -211,7 +220,7 @@ get "/list/*" do
           end
         end
 
-        a["share-url"] = "/file/#{cur_dir}/#{f}"
+        a["share-url"] = "/file/#{URI.encode(cur_dir + '/' + f)}"
         if File.directory?(cur_dir + "/" + f)
           a["icon"] = "icon-folder-open"
           a["share-url"] = ""
@@ -226,7 +235,7 @@ get "/list/*" do
             if convert[ext].has_key?("make_url")
               a["url"] = convert[ext]["make_url"].call(f, cur_dir, ext, request.user_agent)
             else
-              a["url"] = "/convert/#{ext}/#{cur_dir}/#{f}"
+              a["url"] = "/convert/#{ext}/#{URI.encode(cur_dir + '/' + f)}"
             end
 
             if convert[ext].has_key?("icon")
@@ -258,12 +267,15 @@ get '/video-env/*' do |file|
   erb :video, :locals => { :file_name => "/video/#{file}" }
 end
 
-get '/video/*' do |file|
-  send_file '/' + file
+get '/video/*' do |file_en|
+  file = '/' + URI.decode(file_en)
+
+  send_file file
 end
 
-get '/file/*' do |file|
-  puts "FILE NAME = #{file}"
+get '/file/*' do |file_en|
+  file = URI.decode(file_en)
+
   ext = File.extname('/' + file)
 
   if ext.length > 0
