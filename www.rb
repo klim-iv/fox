@@ -27,7 +27,8 @@ cur_dir = BASE
 convert = {
   "avi" => {
     "icon" => "icon-facetime-video",
-    "make_url" => Proc.new { |file, cur_dir, ext, ua|
+    "make_url" => Proc.new { |file_en, cur_dir, ext, ua|
+        file = URI.encode_www_form_component(file_en)
         if ua =~ /VLC.*LibVLC/ or ua =~ /Chromium/
             "/file/#{URI.encode(cur_dir + '/' + file)}"
         else
