@@ -20,6 +20,8 @@ end
 set :bind, '0.0.0.0'
 enable :sessions
 
+#set :show_exceptions, false
+
 BASE = File.expand_path("~")
 
 cur_dir = BASE
@@ -59,10 +61,10 @@ convert = {
                 cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i #{output_file_name + ".link"} -vcodec #{codec} -strict -2 -flags +aic+mv4 -threads #{threads} #{output_file_name}"
                 puts cmd
             else
+                cmd = "echo 'Already exists: #{file}'"
                 puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
             end
 
-            redirect_url = ""
             IO.popen(cmd) { |out|
             }
 
@@ -125,11 +127,11 @@ convert = {
                 cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{output_file_name + ".link"}\" -vcodec #{codec} -acodec copy -threads #{threads} #{output_file_name}"
                 puts cmd
             else
+                cmd = "echo 'Already exists: #{file}'"
                 puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
             end
 
 
-            redirect_url = ""
             IO.popen(cmd) { |out|
             }
 
