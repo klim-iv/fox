@@ -22,6 +22,44 @@ enable :sessions
 
 #set :show_exceptions, false
 
+
+### BEGIN test Nginx
+nginx_bin=""
+nginx_cfg = []
+begin
+    IO.popen("which nginx").each_line { |out|
+        nginx_bin = out.strip
+    }
+rescue
+end
+
+if nginx_bin.length > 0
+    IO.popen([nginx_bin, "-V", :err => [:child, :out]]).each_line { |l|
+        if l =~ /configure/
+            nginx_cfg_str = l
+        end
+    }
+    nginx_cfg = nginx_cfg_str.split(/--/).map { |a|
+        if a =~ /^with-/
+            a.strip
+        else
+            ""
+        end
+    }.keep_if { |a|
+        a.length > 0
+    }
+end
+
+if nginx_cfg.find_index { |a|
+        a =~ /.*mp4_module.*/
+    } != nil
+    puts "Exists MP4 support in Nginx"
+else
+    puts "No support MP4 in Nginx"
+end
+### END test Nginx
+
+
 BASE = File.expand_path("~")
 
 cur_dir = BASE
