@@ -34,6 +34,7 @@ rescue
 end
 
 if nginx_bin.length > 0
+    nginx_cfg_str = ""
     IO.popen([nginx_bin, "-V", :err => [:child, :out]]).each_line { |l|
         if l =~ /configure/
             nginx_cfg_str = l
