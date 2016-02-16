@@ -14,6 +14,7 @@ register Sinatra::UserAgentHelpers
 
 configure do
   set :public_folder, File.dirname(__FILE__) + '/public'
+#  set :traps, false
 #  mime_type :avi, "video/mpeg"
 end
 
@@ -22,6 +23,7 @@ enable :sessions
 
 #set :show_exceptions, false
 
+result_dir = "/tmp/"
 
 ### BEGIN test Nginx
 nginx_bin=""
@@ -55,6 +57,36 @@ if nginx_cfg.find_index { |a|
         a =~ /.*mp4_module.*/
     } != nil
     puts "Exists MP4 support in Nginx"
+
+    cfg = File.new("nginx_local.conf", "w", 0644)
+    cfg.write <<-NGINX_CFG.undent
+        events {
+            worker_connections 8;
+        }
+
+        http {
+            server {
+                listen 18081;
+
+                root /;
+                index index.html;
+
+                location #{result_dir} {
+                    mp4;
+                    mp4_buffer_size     1m;
+                    mp4_max_buffer_size 5m;
+                }
+            }
+        }
+    NGINX_CFG
+    cfg.close
+
+    pid = spawn("#{nginx_bin} -c #{Dir.getwd}/nginx_local.conf")
+
+    trap("TERM") do
+        puts "Terminating..."
+        pid = spawn("#{nginx_bin} -s stop")
+    end
 else
     puts "No support MP4 in Nginx"
 end
@@ -78,7 +110,7 @@ convert = {
     },
     "proc" => Proc.new {|file_en, session, ua = ""|
         file = URI.decode(file_en)
-        output_file_name = "/tmp/#{Digest::MD5.hexdigest(file)}"
+        output_file_name = "#{result_dir}#{Digest::MD5.hexdigest(file)}"
         a = UserAgent.new ua
         if a.ipad?
             output_file_name += ".mp4"
@@ -138,7 +170,7 @@ convert = {
     "icon" => "icon-facetime-video",
     "proc" => Proc.new {|file_en, session, ua = ""|
         file = URI.decode(file_en)
-        output_file_name = "/tmp/#{Digest::MD5.hexdigest(file)}"
+        output_file_name = "#{result_dir}#{Digest::MD5.hexdigest(file)}"
         a = UserAgent.new ua
         if a.ipad?
             output_file_name += ".mp4"

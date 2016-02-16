@@ -20,3 +20,9 @@ def processor_count
     1
   end
 end
+
+class String
+  def undent
+    gsub(/^[ \t]{#{(slice(/^[ \t]+/) || '').length}}/, "")
+  end
+end
