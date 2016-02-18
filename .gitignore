@@ -19,4 +19,5 @@ _yardoc
 doc/
 .DS_Store
 .project
-
+*.pid
+nginx-*
