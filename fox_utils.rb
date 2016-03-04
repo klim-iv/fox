@@ -82,9 +82,6 @@ class Nginx
                 }
 
                 http {
-                    access_log #{Dir.getwd}/nginx-access-#{@port}.log;
-                    error_log #{Dir.getwd}/nginx-error-#{@port}.log;
-
                     server {
                         listen #{@port};
 
@@ -92,14 +89,12 @@ class Nginx
                         index no-index.html;
 
                         location / {
-                            proxy_pass http://localhost:#{@port};
-                            #mp4;
-                            #mp4_buffer_size     1m;
-                            #mp4_max_buffer_size 5m;
+                            mp4;
+                            mp4_buffer_size     1m;
+                            mp4_max_buffer_size 5m;
                         }
 
                         location #{@result_dir} {
-                            proxy_pass http://localhost:#{@port}/;
                             autoindex on;
                             mp4;
                             mp4_buffer_size     1m;
@@ -110,7 +105,7 @@ class Nginx
             NGINX_CFG
             cfg.close
 
-            @pid = spawn("#{@nginx_bin} -c #{Dir.getwd}/nginx-local-#{@port}.conf")
+            @pid = spawn("mkdir -p #{Dir.getwd}/nginx-local/logs && #{@nginx_bin} -p #{Dir.getwd}/nginx-local -c #{Dir.getwd}/nginx-local-#{@port}.conf")
         else
             puts "No support MP4 in Nginx"
         end
@@ -126,7 +121,16 @@ class Nginx
     end
 
     def started?
-        @pid != nil
+        if @pid != nil
+            begin
+                Process.kill 0, @pid
+                true
+            rescue
+                false
+            end
+        else
+            false
+        end
     end
 
 end

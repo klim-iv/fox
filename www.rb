@@ -297,10 +297,8 @@ class FoxApp < Sinatra::Base
         ext = convert.key(ext)
 
         if @@nginx.started?
-#            redirect_url = "http://#{request.host}:#{@@nginx.port}/#{URI.encode_www_form_component(file)}"
             redirect_url = "http://#{request.host}:#{@@nginx.port}/" +
-                    file.split("/").map { |a| URI.encode_www_form_component(a) }.join("/")
-#            redirect_url = "http://#{request.host}:#{@@nginx.port}/#{file}"
+                           file.split("/").map { |a| a.split(" ").map { |b| URI.encode_www_form_component(b) }.join("%20") }.join("/")
             redirect redirect_url
         else
             send_file '/' + file, :length => File.stat('/' + file).size, :filename => File.basename('/' + file)
