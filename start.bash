@@ -8,7 +8,7 @@ else
     tmp=$(gem list --local | grep bundler)
     if [ -z "${tmp}" ]; then
         echo "try to install gem : bundler"
-        gem install bundler
+        sudo gem install bundler
     fi
 
     tmp=$(which bundle)
