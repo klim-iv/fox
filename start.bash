@@ -11,6 +11,13 @@ else
         gem install bundler
     fi
 
+    tmp=$(which bundle)
+    if [ -z "${tmp}" ]; then
+        echo "*** Need to install bundler ***"
+        echo "execute : sudo gem install bundler"
+        exit 1
+    fi
+
     bundle install --path `pwd`
     ruby ./www.rb
 fi
