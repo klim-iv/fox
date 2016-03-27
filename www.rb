@@ -135,7 +135,13 @@ class FoxApp < Sinatra::Base
                         rescue
                         end
 
-                        cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{output_file_name + ".link"}\" -vcodec #{codec} -acodec copy -threads #{threads} #{output_file_name}"
+                        audio_code = " -acodec copy "
+                        a = UserAgent.new ua
+                        if a.ipad?
+                            audio_code = " -c:a aac "
+                        end
+
+                        cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{output_file_name + ".link"}\" -vcodec #{codec} #{audio_code} -threads #{threads} #{output_file_name}"
                         puts cmd
                     else
                         cmd = "echo 'Already exists: #{file}'"
