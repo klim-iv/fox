@@ -135,10 +135,28 @@ class FoxApp < Sinatra::Base
                         rescue
                         end
 
+                        audio_map = 0
+                        cmd = "ffprobe -v error -show_streams -select_streams a -show_entries stream_tags=language -print_format json -i \"#{output_file_name + ".link"}\" "
+                        IO.popen(cmd) { |info|
+                            j = info.read
+                            begin
+                                parsed = JSON.parse(j)
+                                parsed.each_value { |s|
+                                    s.each { |t|
+                                        if t["tags"]["language"] == "rus"
+                                            audio_map = t["index"]
+                                        end
+                                    }
+                                }
+                            rescue
+                                audio_map = 0
+                            end
+                        }
+
                         audio_code = " -acodec copy "
                         a = UserAgent.new ua
                         if a.ipad?
-                            audio_code = " -c:a aac "
+                            audio_code = " -map 0:0 -map 0:#{audio_map} -c:a aac "
                         end
 
                         cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{output_file_name + ".link"}\" -vcodec #{codec} #{audio_code} -threads #{threads} #{output_file_name}"
