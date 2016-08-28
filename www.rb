@@ -156,7 +156,10 @@ class FoxApp < Sinatra::Base
                         audio_code = " -acodec copy "
                         a = UserAgent.new ua
                         if a.ipad?
-                            audio_code = " -map 0:0 -map 0:#{audio_map} -c:a aac "
+                            audio_code = " -c:a aac "
+                            if audio_map != 0
+                                audio_code = " -map 0:0 -map 0:#{audio_map} " + audio_code
+                            end
                         end
 
                         cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{output_file_name + ".link"}\" -vcodec #{codec} #{audio_code} -threads #{threads} #{output_file_name}"
