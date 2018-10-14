@@ -93,6 +93,12 @@ class FoxApp < Sinatra::Base
                 end
             }
         },
+        "epub" => {
+            "icon" => "icon-book",
+            "proc" => Proc.new {|file, session, ua = ""|
+                "/file/#{URI.encode(file)}"
+            }
+        },
         "pdf" => {
             "icon" => "icon-book",
             "proc" => Proc.new {|file, session, ua = ""|
