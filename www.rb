@@ -200,6 +200,12 @@ class FoxApp < Sinatra::Base
                 "/file/#{URI.encode(file)}"
             }
         },
+        "m4b" => {
+            "icon" => "icon-headphones",
+            "proc" => Proc.new {|file, session, ua = ""|
+                                "/file/#{URI.encode(file)}"
+            }
+        },
         "mp3" => {
             "icon" => "icon-headphones",
             "proc" => Proc.new {|file, session, ua = ""|
