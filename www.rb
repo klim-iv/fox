@@ -141,7 +141,24 @@ class FoxApp < Sinatra::Base
                         rescue
                         end
 
+                        resolution = ""
+                        cmd = "ffprobe -v error -show_streams -select_streams v -print_format json -i \"#{output_file_name + ".link"}\" "
+                        IO.popen(cmd) { |info|
+                            j = info.read
+                            begin
+                                parsed = JSON.parse(j)
+                                if parsed["streams"][0]["width"] > 1024 or parsed["streams"][0]["height"] > 768
+                                    resolution = " -vf scale=720x400,setsar=1:1 "
+                                    codec = "mpeg4"
+                                end
+                            rescue
+                                resolution = " -vf scale=640x380,setsar=1:1 "
+                                codec = "mpeg4"
+                            end
+                        }
+
                         audio_map = 0
+                        stereo_converter = ""
                         cmd = "ffprobe -v error -show_streams -select_streams a -show_entries stream_tags=language -print_format json -i \"#{output_file_name + ".link"}\" "
                         IO.popen(cmd) { |info|
                             j = info.read
@@ -151,6 +168,9 @@ class FoxApp < Sinatra::Base
                                     s.each { |t|
                                         if t["tags"]["language"] == "rus"
                                             audio_map = t["index"]
+                                            if t["channel_layout"] == "5.1"
+                                                stereo_converter = " -af 'pan=stereo|c0=FL|c1=FR' "
+                                            end
                                         end
                                     }
                                 }
@@ -159,16 +179,13 @@ class FoxApp < Sinatra::Base
                             end
                         }
 
-                        audio_code = " -acodec copy "
-                        a = UserAgent.new ua
-                        if a.ipad?
-                            audio_code = " -c:a aac "
-                            if audio_map != 0
-                                audio_code = " -map 0:0 -map 0:#{audio_map} " + audio_code
-                            end
+                        audio_code = " -c:a aac "
+                        if audio_map != 0
+                            audio_code = " -map 0:0 -map 0:#{audio_map} " + audio_code
                         end
 
-                        cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{output_file_name + ".link"}\" -vcodec #{codec} #{audio_code} -threads #{threads} #{output_file_name}"
+
+                        cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{output_file_name + ".link"}\" -vcodec #{codec} #{resolution} #{audio_code} #{stereo_converter} -threads #{threads} #{output_file_name}"
                         puts cmd
                     else
                         cmd = "echo 'Already exists: #{file}'"
