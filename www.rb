@@ -168,8 +168,8 @@ class FoxApp < Sinatra::Base
                                     s.each { |t|
                                         if t["tags"]["language"] == "rus"
                                             audio_map = t["index"]
-                                            if t["channel_layout"] == "5.1"
-                                                stereo_converter = " -af 'pan=stereo|c0=FL|c1=FR' "
+                                            if t["channel_layout"] =~ /5.1/
+                                                stereo_converter = " -ac 2 "
                                             end
                                         end
                                     }
