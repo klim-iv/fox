@@ -69,7 +69,8 @@ class FoxApp < Sinatra::Base
                         rescue
                         end
 
-                        cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i #{output_file_name + ".link"} -vcodec #{codec} -strict -2 -flags +aic+mv4 -threads #{threads} #{output_file_name}"
+                        stereo_converter = " -ac 2 "
+                        cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i #{output_file_name + ".link"} -vcodec #{codec} -strict -2 -flags +aic+mv4 #{stereo_converter} -threads #{threads} #{output_file_name}"
                         puts cmd
                     else
                         cmd = "echo 'Already exists: #{file}'"
@@ -167,8 +168,8 @@ class FoxApp < Sinatra::Base
                                 parsed.each_value { |s|
                                     s.each { |t|
                                         if t["tags"]["language"] == "rus"
-                                            audio_map = t["index"]
-                                            if t["channel_layout"] =~ /5.1/
+                                            puts t["channel_layout"]
+                                            if t["channel_layout"] =~ /5[.]/
                                                 stereo_converter = " -ac 2 "
                                             end
                                         end
