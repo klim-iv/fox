@@ -212,10 +212,105 @@ class FoxApp < Sinatra::Base
             }
         },
         "mp4" => {
-            "icon" => "icon-facetime-video",
-            "proc" => Proc.new {|file, session, ua = ""|
+             "icon" => "icon-facetime-video",
+#            "proc" => Proc.new {|file, session, ua = ""|
+#
+#                "/file/#{URI.encode(file)}"
+#            }
+            "proc" => Proc.new {|file_en, session, ua = ""|
+                file = URI.decode(file_en)
+                output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
+                a = UserAgent.new ua
+                if a.ipad?
+                    output_file_name += ".mp4"
 
-                "/file/#{URI.encode(file)}"
+                    cmd = "ffprobe \"#{file}\" 2>&1"
+                    codec = "mpeg4"
+                    IO.popen(cmd).each_line { |line|
+                        if line =~ /Stream .*:.*Video: .264/
+                            codec = "copy"
+                        end
+                    }
+                    threads = processor_count
+
+                    if not File.exist?(output_file_name)
+                        begin
+                            File.delete(output_file_name + ".link")
+                        rescue
+                        end
+
+                        begin
+                            File.symlink(file, output_file_name + ".link")
+                        rescue
+                        end
+
+                        resolution = ""
+                        cmd = "ffprobe -v error -show_streams -select_streams v -print_format json -i \"#{output_file_name + ".link"}\" "
+                        IO.popen(cmd) { |info|
+                            j = info.read
+                            begin
+                                parsed = JSON.parse(j)
+                                if parsed["streams"][0]["width"] > 1024 or parsed["streams"][0]["height"] > 768
+                                    resolution = " -vf scale=720x400,setsar=1:1 "
+                                    codec = "mpeg4"
+                                end
+                            rescue
+                                resolution = " -vf scale=640x380,setsar=1:1 "
+                                codec = "mpeg4"
+                            end
+                        }
+
+                        audio_map = 0
+                        stereo_converter = ""
+                        cmd = "ffprobe -v error -show_streams -select_streams a -show_entries stream_tags=language -print_format json -i \"#{output_file_name + ".link"}\" "
+                        IO.popen(cmd) { |info|
+                            j = info.read
+                            begin
+                                parsed = JSON.parse(j)
+                                parsed.each_value { |s|
+                                    s.each { |t|
+                                        if t["tags"]["language"] == "rus"
+                                            puts t["channel_layout"]
+                                            if t["channel_layout"] =~ /5[.]/
+                                                stereo_converter = " -ac 2 "
+                                            end
+                                        end
+                                    }
+                                }
+                            rescue
+                                audio_map = 0
+                            end
+                        }
+
+                        audio_code = " -c:a aac "
+                        if audio_map != 0
+                            audio_code = " -map 0:0 -map 0:#{audio_map} " + audio_code
+                        end
+
+
+                        cmd = "cd \"#{File.dirname(file)}\" && ffmpeg -i \"#{output_file_name + ".link"}\" -vcodec #{codec} #{resolution} #{audio_code} #{stereo_converter} -threads #{threads} #{output_file_name}"
+                        puts cmd
+                    else
+                        cmd = "echo 'Already exists: #{file}'"
+                        puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
+                    end
+
+
+                    IO.popen(cmd) { |out|
+                    }
+
+                    "/video/#{URI.encode(output_file_name)}"
+                else
+                    output_file_name += ".mkv"
+
+                    if not File.exist?(output_file_name)
+                        File.symlink(file, output_file_name)
+                    else
+                        puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
+                    end
+
+                    "/video/#{URI.encode(output_file_name)}"
+                end
             }
         },
         "m4b" => {
