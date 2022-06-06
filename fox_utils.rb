@@ -77,6 +77,7 @@ class Nginx
         cfg = File.new("nginx-local-#{@port}.conf", "w", 0644)
         cfg.write <<-NGINX_CFG.undent
                 pid #{Dir.getwd}/#{@port}.pid;
+                error_log /tmp/nginx_#{port}.log debug;
                 events {
                     worker_connections 8;
                 }
@@ -84,6 +85,7 @@ class Nginx
                 http {
                     server {
                         listen #{@port};
+                        access_log /tmp/nginx_access_#{port}.log;
 
                         root /;
                         index no-index.html;
