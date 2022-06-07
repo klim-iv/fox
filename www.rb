@@ -1,14 +1,23 @@
 require 'rubygems'
 require 'bundler/setup'
-require 'sinatra'
-require 'sinatra/base'
-require 'sinatra/support'
 require 'json'
 require 'uri'
 require 'digest'
+require 'optparse'
 
 require './fox_utils.rb'
 
+OPT = {}
+parser = OptionParser.new { |psr|
+    psr.on("-n", FalseClass) { |p| OPT[:use_nginx] = p }
+    psr.on('-p port', Integer) { |p| OPT[:port] = p }
+}
+
+parser.parse!
+
+require 'sinatra'
+require 'sinatra/base'
+require 'sinatra/support'
 Bundler.require
 
 register Sinatra::UserAgentHelpers
@@ -20,8 +29,6 @@ class FoxApp < Sinatra::Base
     NGINX_PORT = 18082
     RESULT_DIR = "/tmp/"
 
-    @@nginx = Nginx.new(RESULT_DIR, NGINX_PORT)
-    @@nginx.start
     def self.nginx
         @@nginx
     end
@@ -29,9 +36,20 @@ class FoxApp < Sinatra::Base
     cur_dir = BASE
 
     configure do
+        if OPT.has_key?(:port)
+            set :port, OPT[:port]
+        else
+            set :port, 4567
+        end
+
         set :public_folder, File.dirname(__FILE__) + '/public'
         set :bind, '0.0.0.0'
         enable :sessions
+
+        @@nginx = Nginx.new(RESULT_DIR, NGINX_PORT)
+        if !OPT.has_key?(:use_nginx) || OPT[:use_nginx]
+            @@nginx.start
+        end
 
         #  set :show_exceptions, false
         #  mime_type :avi, "video/mpeg"

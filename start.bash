@@ -19,5 +19,5 @@ else
     fi
 
     bundle install --path `pwd`
-    ruby ./www.rb
+    ruby ./www.rb $@
 fi
