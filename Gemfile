@@ -1,3 +1,6 @@
 source 'https://rubygems.org'
 gem 'sinatra'
 gem 'sinatra-support'
+gem 'thin'
+gem 'puma'
+gem 'webrick'

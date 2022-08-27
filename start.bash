@@ -18,6 +18,6 @@ else
         exit 1
     fi
 
-    bundle install --path `pwd`
+    bundle install
     ruby ./www.rb $@
 fi

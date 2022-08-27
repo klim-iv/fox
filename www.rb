@@ -61,13 +61,13 @@ class FoxApp < Sinatra::Base
             "make_url" => Proc.new { |file_en, cur_dir, ext, ua|
                 file = file_en.split(' ').map { |b| URI.encode_www_form_component(b) }.join('%20')
                 if ua =~ /VLC.*LibVLC/ or ua =~ /Chromium/
-                    "/file/#{URI.encode(cur_dir + '/') + file}"
+                    "/file/#{URI.encode_www_form_component(cur_dir + '/') + file}"
                 else
-                    "/convert/#{ext}/#{URI.encode(cur_dir + '/') + file}"
+                    "/convert/#{ext}/#{URI.encode_www_form_component(cur_dir + '/') + file}"
                 end
             },
             "proc" => Proc.new {|file_en, session, ua = ""|
-                file = URI.decode(file_en)
+                file = URI.decode_www_form_component(file_en)
                 output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
                 a = UserAgent.new ua
                 if a.ipad?
@@ -98,7 +98,7 @@ class FoxApp < Sinatra::Base
                     IO.popen(cmd) { |out|
                     }
 
-                    "/video/#{URI.encode(output_file_name)}"
+                    "/video/#{URI.encode_www_form_component(output_file_name)}"
                 else
                     output_file_name += ".avi"
 
@@ -108,33 +108,33 @@ class FoxApp < Sinatra::Base
                         puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
                     end
 
-                    "/video/#{URI.encode(output_file_name)}"
+                    "/video/#{URI.encode_www_form_component(output_file_name)}"
                 end
             }
         },
         "epub" => {
             "icon" => "icon-book",
             "proc" => Proc.new {|file, session, ua = ""|
-                "/file/#{URI.encode(file)}"
+                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
         "pdf" => {
             "icon" => "icon-book",
             "proc" => Proc.new {|file, session, ua = ""|
-                "/file/#{URI.encode(file)}"
+                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
         "djvu" => {
             "icon" => "icon-book",
             "proc" => Proc.new {|file, session, ua = ""|
 
-                "/file/#{URI.encode(file)}"
+                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
         "mkv" => {
             "icon" => "icon-facetime-video",
             "proc" => Proc.new {|file_en, session, ua = ""|
-                file = URI.decode(file_en)
+                file = URI.decode_www_form_component(file_en)
                 output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
                 a = UserAgent.new ua
                 if a.ipad?
@@ -215,7 +215,7 @@ class FoxApp < Sinatra::Base
                     IO.popen(cmd) { |out|
                     }
 
-                    "/video/#{URI.encode(output_file_name)}"
+                    "/video/#{URI.encode_www_form_component(output_file_name)}"
                 else
                     output_file_name += ".mkv"
 
@@ -225,7 +225,7 @@ class FoxApp < Sinatra::Base
                         puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
                     end
 
-                    "/video/#{URI.encode(output_file_name)}"
+                    "/video/#{URI.encode_www_form_component(output_file_name)}"
                 end
             }
         },
@@ -233,10 +233,10 @@ class FoxApp < Sinatra::Base
              "icon" => "icon-facetime-video",
 #            "proc" => Proc.new {|file, session, ua = ""|
 #
-#                "/file/#{URI.encode(file)}"
+#                "/file/#{URI.encode_www_form_component(file)}"
 #            }
             "proc" => Proc.new {|file_en, session, ua = ""|
-                file = URI.decode(file_en)
+                file = URI.decode_www_form_component(file_en)
                 output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
                 a = UserAgent.new ua
                 if a.ipad?
@@ -317,7 +317,7 @@ class FoxApp < Sinatra::Base
                     IO.popen(cmd) { |out|
                     }
 
-                    "/video/#{URI.encode(output_file_name)}"
+                    "/video/#{URI.encode_www_form_component(output_file_name)}"
                 else
                     output_file_name += ".mkv"
 
@@ -327,51 +327,51 @@ class FoxApp < Sinatra::Base
                         puts "!!! Already exists converted file: #{file} -> #{output_file_name}"
                     end
 
-                    "/video/#{URI.encode(output_file_name)}"
+                    "/video/#{URI.encode_www_form_component(output_file_name)}"
                 end
             }
         },
         "m4b" => {
             "icon" => "icon-headphones",
             "proc" => Proc.new {|file, session, ua = ""|
-                                "/file/#{URI.encode(file)}"
+                                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
         "mp3" => {
             "icon" => "icon-headphones",
             "proc" => Proc.new {|file, session, ua = ""|
-                                "/file/#{URI.encode(file)}"
+                                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
         "jpg" => {
             "icon" => "icon-picture",
             "proc" => Proc.new {|file, session, ua = ""|
-                                "/file/#{URI.encode(file)}"
+                                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
         "jpeg" => {
             "icon" => "icon-picture",
             "proc" => Proc.new {|file, session, ua = ""|
 
-                "/file/#{URI.encode(file)}"
+                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
         "gif" => {
             "icon" => "icon-picture",
             "proc" => Proc.new {|file, session, ua = ""|
-                                "/file/#{URI.encode(file)}"
+                                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
         "png" => {
             "icon" => "icon-picture",
             "proc" => Proc.new {|file, session, ua = ""|
-                                "/file/#{URI.encode(file)}"
+                                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
         "html" => {
             "icon" => "icon-file",
             "proc" => Proc.new {|file, session, ua = ""|
-                                "/file/#{URI.encode(file)}"
+                                "/file/#{URI.encode_www_form_component(file)}"
             }
         },
     }
@@ -398,7 +398,7 @@ class FoxApp < Sinatra::Base
                 end
             end
 
-            a["share-url"] = "/file/#{URI.encode(cur_dir + '/') + f.split(" ").map { |b| URI.encode_www_form_component(b) }.join("%20")}"
+            a["share-url"] = "/file/#{URI.encode_www_form_component(cur_dir + '/') + f.split(" ").map { |b| URI.encode_www_form_component(b) }.join("%20")}"
             if File.directory?(cur_dir + "/" + f)
                 a["icon"] = "icon-folder-open"
                 a["share-url"] = ""
@@ -413,7 +413,7 @@ class FoxApp < Sinatra::Base
                     if convert[ext].has_key?("make_url")
                         a["url"] = convert[ext]["make_url"].call(f, cur_dir, ext, request.user_agent)
                     else
-                        a["url"] = "/convert/#{ext}/#{URI.encode(cur_dir + '/') + f.split(" ").map { |b| URI.encode_www_form_component(b) }.join("%20")}"
+                        a["url"] = "/convert/#{ext}/#{URI.encode_www_form_component(cur_dir + '/') + f.split(" ").map { |b| URI.encode_www_form_component(b) }.join("%20")}"
                     end
 
                     if convert[ext].has_key?("icon")
@@ -446,7 +446,7 @@ class FoxApp < Sinatra::Base
     end
 
     get '/video/*' do |file_en|
-        file = '/' + URI.decode(file_en)
+        file = '/' + URI.decode_www_form_component(file_en)
 
         if @@nginx.started?
             redirect_url = "http://#{request.host}:#{@@nginx.port}#{file}"
@@ -457,7 +457,7 @@ class FoxApp < Sinatra::Base
     end
 
     get '/file/*' do |file_en|
-        file = URI.decode(file_en)
+        file = URI.decode_www_form_component(file_en)
 
         ext = File.extname('/' + file)
 
