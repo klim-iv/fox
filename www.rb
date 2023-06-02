@@ -1,5 +1,7 @@
 require 'rubygems'
 require 'bundler/setup'
+
+require 'base64'
 require 'json'
 require 'uri'
 require 'digest'
@@ -60,14 +62,14 @@ class FoxApp < Sinatra::Base
             "icon" => "icon-facetime-video",
             "make_url" => Proc.new { |file_en, cur_dir, ext, ua|
                 file = file_en.split(' ').map { |b| URI.encode_www_form_component(b) }.join('%20')
-                if ua =~ /VLC.*LibVLC/ or ua =~ /Chromium/
-                    "/file/#{URI.encode_www_form_component(cur_dir + '/') + file}"
+                if ua =~ /VLC.*LibVLC/ or ua =~ /Chrom/
+                    "/file/#{Base64.urlsafe_encode64(cur_dir + '/' + file)}"
                 else
-                    "/convert/#{ext}/#{URI.encode_www_form_component(cur_dir + '/') + file}"
+                    "/convert/#{ext}/#{Base64.urlsafe_encode64(cur_dir + '/' + file)}"
                 end
             },
             "proc" => Proc.new {|file_en, session, ua = ""|
-                file = URI.decode_www_form_component(file_en)
+                file = Base64.urlsafe_decode64(file_en)
                 output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
                 a = UserAgent.new ua
                 if a.ipad?
@@ -134,7 +136,7 @@ class FoxApp < Sinatra::Base
         "mkv" => {
             "icon" => "icon-facetime-video",
             "proc" => Proc.new {|file_en, session, ua = ""|
-                file = URI.decode_www_form_component(file_en)
+                file = Base64.urlsafe_decode64(file_en)
                 output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
                 a = UserAgent.new ua
                 if a.ipad?
@@ -230,14 +232,11 @@ class FoxApp < Sinatra::Base
             }
         },
         "mp4" => {
-             "icon" => "icon-facetime-video",
-#            "proc" => Proc.new {|file, session, ua = ""|
-#
-#                "/file/#{URI.encode_www_form_component(file)}"
-#            }
+            "icon" => "icon-facetime-video",
             "proc" => Proc.new {|file_en, session, ua = ""|
-                file = URI.decode_www_form_component(file_en)
+                file = Base64.urlsafe_decode64(file_en)
                 output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
+
                 a = UserAgent.new ua
                 if a.ipad?
                     output_file_name += ".mp4"
@@ -319,7 +318,7 @@ class FoxApp < Sinatra::Base
 
                     "/video/#{URI.encode_www_form_component(output_file_name)}"
                 else
-                    output_file_name += ".mkv"
+                    output_file_name += ".mp4"
 
                     if not File.exist?(output_file_name)
                         File.symlink(file, output_file_name)
@@ -379,13 +378,18 @@ class FoxApp < Sinatra::Base
 
     get "/list/*" do
         cur_dir = "/" + params[:splat][0]
+        begin
+          cur_dir = "/" + Base64.urlsafe_decode64(params[:splat][0])
+        rescue
+        end
+
         d = Dir.new(cur_dir)
         files = Array.new()
         i = 0
         d.each { |f|
             i += 1
-            a = {"id" => "id" + i.to_s, "name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
-                        #redefine operator for sort files
+            a = {"id" => "id" + i.to_s, "name_encoded" => Base64.urlsafe_encode64(cur_dir + "/" + f), "name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
+            #redefine operator for sort files
             def a.<=>(o)
                 if self["is_dir"] == o["is_dir"]
                     return self["name"] <=> o["name"]
@@ -398,7 +402,7 @@ class FoxApp < Sinatra::Base
                 end
             end
 
-            a["share-url"] = "/file/#{URI.encode_www_form_component(cur_dir + '/') + f.split(" ").map { |b| URI.encode_www_form_component(b) }.join("%20")}"
+            a["share-url"] = "/file/#{Base64.urlsafe_encode64(cur_dir + '/' + f)}"
             if File.directory?(cur_dir + "/" + f)
                 a["icon"] = "icon-folder-open"
                 a["share-url"] = ""
@@ -413,7 +417,7 @@ class FoxApp < Sinatra::Base
                     if convert[ext].has_key?("make_url")
                         a["url"] = convert[ext]["make_url"].call(f, cur_dir, ext, request.user_agent)
                     else
-                        a["url"] = "/convert/#{ext}/#{URI.encode_www_form_component(cur_dir + '/') + f.split(" ").map { |b| URI.encode_www_form_component(b) }.join("%20")}"
+                        a["url"] = "/convert/#{ext}/#{Base64.urlsafe_encode64(cur_dir + '/' + f)}"
                     end
 
                     if convert[ext].has_key?("icon")
@@ -429,13 +433,13 @@ class FoxApp < Sinatra::Base
 
 
     get '/' do
-        redirect to("/list/#{BASE}")
+        redirect to("/list/#{Base64.urlsafe_encode64(BASE)}")
     end
 
 
     get '/convert/:convert/*' do |cnv, file|
         puts "UA = #{request.user_agent}"
-        redirect_url = convert[cnv]["proc"].call("/" + file, session, request.user_agent)
+        redirect_url = convert[cnv]["proc"].call(file, session, request.user_agent)
         puts redirect_url
         redirect to(redirect_url)
     end
@@ -447,6 +451,10 @@ class FoxApp < Sinatra::Base
 
     get '/video/*' do |file_en|
         file = '/' + URI.decode_www_form_component(file_en)
+        begin
+          file = Base64.urlsafe_decode64(file_en)
+        rescue
+        end
 
         if @@nginx.started?
             redirect_url = "http://#{request.host}:#{@@nginx.port}#{file}"
@@ -458,6 +466,10 @@ class FoxApp < Sinatra::Base
 
     get '/file/*' do |file_en|
         file = URI.decode_www_form_component(file_en)
+        begin
+          file = Base64.urlsafe_decode64(file_en)
+        rescue
+        end
 
         ext = File.extname('/' + file)
 

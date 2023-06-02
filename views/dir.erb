@@ -54,7 +54,7 @@
 									<% if f.has_key?("icon") %>
 									<i class="<%= f["icon"] %>"></i>
 									<% end %>
-									<% if f["is_dir"] %> <a href="/list<%= f["name"] %>"> <%= File.basename(f["name"]) %> </a>
+									<% if f["is_dir"] %> <a href="/list/<%= f["name_encoded"] %>"> <%= File.basename(f["name"]) %> </a>
 									<% elsif f.has_key?("url") %> <a href="<%= f["url"] %>" onclick="do_spin('<%= f["id"] %>');"> <%= File.basename(f["name"]) %> </a>
 									<% else %>
 									<%= f["name"] %>
