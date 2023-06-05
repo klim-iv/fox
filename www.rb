@@ -61,7 +61,7 @@ class FoxApp < Sinatra::Base
         "avi" => {
             "icon" => "icon-facetime-video",
             "make_url" => Proc.new { |file_en, cur_dir, ext, ua|
-                file = file_en.split(' ').map { |b| URI.encode_www_form_component(b) }.join('%20')
+                file = file_en
                 if ua =~ /VLC.*LibVLC/ or ua =~ /Chrom/
                     "/file/#{Base64.urlsafe_encode64(cur_dir + '/' + file)}"
                 else
@@ -69,7 +69,7 @@ class FoxApp < Sinatra::Base
                 end
             },
             "proc" => Proc.new {|file_en, session, ua = ""|
-                file = Base64.urlsafe_decode64(file_en)
+                file = Base64.urlsafe_decode64(file_en).force_encoding("UTF-8")
                 output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
                 a = UserAgent.new ua
                 if a.ipad?
@@ -136,7 +136,7 @@ class FoxApp < Sinatra::Base
         "mkv" => {
             "icon" => "icon-facetime-video",
             "proc" => Proc.new {|file_en, session, ua = ""|
-                file = Base64.urlsafe_decode64(file_en)
+                file = Base64.urlsafe_decode64(file_en).force_encoding("UTF-8")
                 output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
                 a = UserAgent.new ua
                 if a.ipad?
@@ -234,7 +234,7 @@ class FoxApp < Sinatra::Base
         "mp4" => {
             "icon" => "icon-facetime-video",
             "proc" => Proc.new {|file_en, session, ua = ""|
-                file = Base64.urlsafe_decode64(file_en)
+                file = Base64.urlsafe_decode64(file_en).force_encoding("UTF-8")
                 output_file_name = "#{RESULT_DIR}#{Digest::MD5.hexdigest(file)}"
 
                 a = UserAgent.new ua
@@ -379,7 +379,7 @@ class FoxApp < Sinatra::Base
     get "/list/*" do
         cur_dir = "/" + params[:splat][0]
         begin
-          cur_dir = "/" + Base64.urlsafe_decode64(params[:splat][0])
+          cur_dir = "/" + Base64.urlsafe_decode64(params[:splat][0]).force_encoding("UTF-8")
         rescue
         end
 
@@ -452,7 +452,7 @@ class FoxApp < Sinatra::Base
     get '/video/*' do |file_en|
         file = '/' + URI.decode_www_form_component(file_en)
         begin
-          file = Base64.urlsafe_decode64(file_en)
+          file = Base64.urlsafe_decode64(file_en).force_encoding("UTF-8")
         rescue
         end
 
@@ -467,7 +467,7 @@ class FoxApp < Sinatra::Base
     get '/file/*' do |file_en|
         file = URI.decode_www_form_component(file_en)
         begin
-          file = Base64.urlsafe_decode64(file_en)
+          file = Base64.urlsafe_decode64(file_en).force_encoding("UTF-8")
         rescue
         end
 
