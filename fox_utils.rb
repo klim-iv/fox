@@ -72,10 +72,10 @@ class Nginx
         if @nginx_cfg.find_index { |a|
             a =~ /.*mp4_module.*/
         } != nil
-        puts "Exists MP4 support in Nginx"
+            puts "Exists MP4 support in Nginx"
 
-        cfg = File.new("nginx-local-#{@port}.conf", "w", 0644)
-        cfg.write <<-NGINX_CFG.undent
+            cfg = File.new("nginx-local-#{@port}.conf", "w", 0644)
+            cfg.write <<-NGINX_CFG.undent
                 pid #{Dir.getwd}/#{@port}.pid;
                 error_log /tmp/nginx_#{port}.log debug;
                 events {
@@ -109,7 +109,9 @@ class Nginx
 
             @pid = spawn("mkdir -p #{Dir.getwd}/nginx-local/logs && #{@nginx_bin} -p #{Dir.getwd}/nginx-local -c #{Dir.getwd}/nginx-local-#{@port}.conf")
         else
-            puts "No support MP4 in Nginx"
+            puts "No support MP4 in Nginx, Nginx will not start"
+            puts "For using Nginx, compile it from: http://hg.nginx.org/nginx/branches with flag: '--with-http_mp4_module'"
+            puts "Build guide here: http://nginx.org/en/docs/configure.html"
         end
 
         return @pid
