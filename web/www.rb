@@ -13,6 +13,7 @@ OPT = {}
 parser = OptionParser.new { |psr|
     psr.on("-n", FalseClass) { |p| OPT[:use_nginx] = p }
     psr.on('-p port', Integer) { |p| OPT[:port] = p }
+    psr.on('-r result_dir', String) { |p| OPT[:result_dir] = p }
 }
 
 parser.parse!
@@ -29,7 +30,12 @@ class FoxApp < Sinatra::Base
     BASE = File.expand_path("~")
 
     NGINX_PORT = 18082
-    RESULT_DIR = "/tmp/"
+    if OPT.has_key?(:result_dir)
+        RESULT_DIR = OPT[:result_dir]
+    else
+        RESULT_DIR = "/tmp/"
+    end
+
 
     def self.nginx
         @@nginx

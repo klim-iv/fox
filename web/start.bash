@@ -19,5 +19,5 @@ else
     fi
 
     bundle install
-    ruby ./www.rb $@
+    ruby ./www.rb -r '/res/' $@
 fi
