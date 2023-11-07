@@ -14,6 +14,7 @@ parser = OptionParser.new { |psr|
     psr.on("-n", FalseClass) { |p| OPT[:use_nginx] = p }
     psr.on('-p port', Integer) { |p| OPT[:port] = p }
     psr.on('-r result_dir', String) { |p| OPT[:result_dir] = p }
+    psr.on('-e export_dir', String) { |p| OPT[:export_dir] = p }
 }
 
 parser.parse!
@@ -27,7 +28,11 @@ register Sinatra::UserAgentHelpers
 
 
 class FoxApp < Sinatra::Base
-    BASE = File.expand_path("~")
+    if OPT.has_key?(:export_dir)
+        BASE = OPT[:export_dir]
+    else
+        BASE = File.expand_path("~")
+    end
 
     NGINX_PORT = 18082
     if OPT.has_key?(:result_dir)
@@ -390,11 +395,21 @@ class FoxApp < Sinatra::Base
           cur_dir = "/" + Base64.urlsafe_decode64(params[:splat][0]).force_encoding("UTF-8")
         rescue
         end
+        cur_dir = File.realpath(cur_dir)
+        top_level = cur_dir == BASE
 
         d = Dir.new(cur_dir)
         files = Array.new()
         i = 0
         d.each { |f|
+            if f == '.'
+              next
+            end
+
+            if f == '..' and top_level
+              next
+            end
+
             i += 1
             a = {"id" => "id" + i.to_s, "name_encoded" => Base64.urlsafe_encode64(cur_dir + "/" + f), "name" => cur_dir + "/" + f, "is_dir" => File.directory?(cur_dir + "/" + f)}
             #redefine operator for sort files

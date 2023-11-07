@@ -10,8 +10,7 @@ work_dir="$HOME/Downloads:/Downloads"
 tmp_dir="/tmp/fox-stuff"
 mkdir -p ${tmp_dir}
 
-
-for i in 1 2 3 4 5 6 7 8; do
+for i in 1 2 3; do
 
     echo "Started:"
     date
@@ -25,6 +24,7 @@ for i in 1 2 3 4 5 6 7 8; do
         -p ${nginx_port}:${nginx_port} \
         -v ${work_dir} \
         -v ${tmp_dir}:/res \
+        -v $(pwd)/web:/fox \
         -it ${docker_image}
 
     echo "Finished:"
