@@ -83,6 +83,8 @@ class Nginx
                 }
 
                 http {
+                    proxy_max_temp_file_size 0;
+                    proxy_buffering off;
                     server {
                         listen #{@port};
                         access_log /tmp/nginx_access_#{port}.log;

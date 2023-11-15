@@ -52,6 +52,8 @@ class FoxApp < Sinatra::Base
 
         set :public_folder, File.dirname(__FILE__) + '/public'
         set :bind, '0.0.0.0'
+        set :environment, :production
+        set :server, %w[thin mongrel webrick]
         enable :sessions
 
         @@nginx = Nginx.new(RESULT_DIR, NGINX_PORT)
@@ -489,7 +491,7 @@ class FoxApp < Sinatra::Base
                            file.split("/").map { |a| a.split(" ").map { |b| URI.encode_www_form_component(b) }.join("%20") }.join("/")
             redirect redirect_url
         else
-            send_file '/' + file, :length => File.stat('/' + file).size, :filename => File.basename('/' + file)
+            send_file '/' + file, :length => File.stat('/' + file).size, :filename => File.basename('/' + file), :type => 'Application/octet-stream'
         end
     end
 
