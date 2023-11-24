@@ -396,6 +396,11 @@ class FoxApp < Sinatra::Base
         rescue
         end
         cur_dir = File.realpath(cur_dir)
+
+        if cur_dir == '/'
+          cur_dir = BASE
+        end
+
         top_level = cur_dir == BASE
 
         d = Dir.new(cur_dir)
@@ -506,7 +511,7 @@ class FoxApp < Sinatra::Base
                            file.split("/").map { |a| a.split(" ").map { |b| URI.encode_www_form_component(b) }.join("%20") }.join("/")
             redirect redirect_url
         else
-            send_file '/' + file, :length => File.stat('/' + file).size, :filename => File.basename('/' + file), :type => 'Application/octet-stream'
+            send_file '/' + file, :length => File.stat('/' + file).size, :filename => File.basename('/' + file)
         end
     end
 

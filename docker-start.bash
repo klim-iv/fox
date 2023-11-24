@@ -11,6 +11,7 @@ tmp_dir="/tmp/fox-stuff"
 mkdir -p ${tmp_dir}
 
 for i in 1 2 3; do
+    docker rm ${name}
 
     echo "Started:"
     date

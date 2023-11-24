@@ -41,6 +41,7 @@ class Nginx
         @nginx_cfg = []
         @result_dir = result_dir
         @port = port
+        @nginx_working_dir = "/tmp/nginx-work-dir-"
 
         begin
             IO.popen("which nginx").each_line { |out|
@@ -65,6 +66,8 @@ class Nginx
                 }.keep_if { |a|
                 a.length > 0
             }
+            @nginx_working_dir += "#{@port}"
+            Dir.mkdir(@nginx_working_dir)
         end
     end
 
@@ -74,9 +77,9 @@ class Nginx
         } != nil
             puts "Exists MP4 support in Nginx"
 
-            cfg = File.new("nginx-local-#{@port}.conf", "w", 0644)
+            cfg = File.new("#{@nginx_working_dir}/nginx-local-#{@port}.conf", "w+", 0644)
             cfg.write <<-NGINX_CFG.undent
-                pid #{Dir.getwd}/#{@port}.pid;
+                pid #{@nginx_working_dir}/#{@port}.pid;
                 error_log /tmp/nginx_#{port}.log debug;
                 events {
                     worker_connections 8;
@@ -109,7 +112,7 @@ class Nginx
             NGINX_CFG
             cfg.close
 
-            @pid = spawn("mkdir -p #{Dir.getwd}/nginx-local/logs && #{@nginx_bin} -p #{Dir.getwd}/nginx-local -c #{Dir.getwd}/nginx-local-#{@port}.conf")
+            @pid = spawn("mkdir -p #{@nginx_working_dir}/nginx-local/logs && #{@nginx_bin} -p #{@nginx_working_dir}/nginx-local -c #{@nginx_working_dir}/nginx-local-#{@port}.conf")
         else
             puts "No support MP4 in Nginx, Nginx will not start"
             puts "For using Nginx, compile it from: http://hg.nginx.org/nginx/branches with flag: '--with-http_mp4_module'"
@@ -121,7 +124,7 @@ class Nginx
 
     def stop
         if started?
-            spawn("#{@nginx_bin} -s stop -c #{Dir.getwd}/nginx-local-#{@port}.conf")
+            spawn("#{@nginx_bin} -s stop -c #{@nginx_working_dir}/nginx-local-#{@port}.conf")
             puts "Nginx stoped"
         end
     end

@@ -18,4 +18,4 @@ WORKDIR /fox
 COPY ./web /fox
 RUN bundle install
 
-CMD ["/fox/start.bash", "-n", "-e", "/Downloads"]
+CMD ["/fox/start.bash", "-e", "/Downloads"]
