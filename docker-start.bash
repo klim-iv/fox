@@ -21,6 +21,7 @@ for i in 1 2 3; do
         --rm \
         --name=${name} \
         --memory=${memory} \
+        -e RESULT_DIR='/res/' \
         -p ${port}:${port} \
         -p ${nginx_port}:${nginx_port} \
         -v ${work_dir} \

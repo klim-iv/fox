@@ -486,6 +486,7 @@ class FoxApp < Sinatra::Base
 
         if @@nginx.started?
             redirect_url = "http://#{request.host}:#{@@nginx.port}#{file}"
+            p "redirect to: #{redirect_url}"
             redirect to(redirect_url)
         else
             send_file file

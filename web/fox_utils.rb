@@ -67,7 +67,9 @@ class Nginx
                 a.length > 0
             }
             @nginx_working_dir += "#{@port}"
-            Dir.mkdir(@nginx_working_dir)
+            if !Dir.exist?(@nginx_working_dir)
+                Dir.mkdir(@nginx_working_dir)
+            end
         end
     end
 
@@ -80,7 +82,7 @@ class Nginx
             cfg = File.new("#{@nginx_working_dir}/nginx-local-#{@port}.conf", "w+", 0644)
             cfg.write <<-NGINX_CFG.undent
                 pid #{@nginx_working_dir}/#{@port}.pid;
-                error_log /tmp/nginx_#{port}.log debug;
+                error_log #{@nginx_working_dir}/nginx_error_#{port}.log debug;
                 events {
                     worker_connections 8;
                 }
@@ -90,7 +92,8 @@ class Nginx
                     proxy_buffering off;
                     server {
                         listen #{@port};
-                        access_log /tmp/nginx_access_#{port}.log;
+                        server_name _;
+                        access_log #{@nginx_working_dir}/nginx_access_#{port}.log;
 
                         root /;
                         index no-index.html;
