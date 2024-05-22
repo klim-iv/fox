@@ -10,7 +10,13 @@ work_dir="$HOME/Downloads:/Downloads"
 tmp_dir="/tmp/fox-stuff"
 mkdir -p ${tmp_dir}
 
-for i in 1 2 3; do
+# number attempts for restart
+iter=3
+if [ -n "${1}" ]; then
+    iter=${1}
+fi
+
+for i in $(seq ${iter}); do
     docker rm ${name}
 
     echo "Started:"
