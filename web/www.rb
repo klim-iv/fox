@@ -201,8 +201,7 @@ class FoxApp < Sinatra::Base
                                 parsed.each_value { |s|
                                     s.each { |t|
                                         if t["tags"]["language"] == "rus"
-                                            puts t["channel_layout"]
-                                            if t["channel_layout"] =~ /5[.]/
+                                            if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
                                                 stereo_converter = " -ac 2 "
                                             end
                                         end
@@ -300,8 +299,7 @@ class FoxApp < Sinatra::Base
                                 parsed.each_value { |s|
                                     s.each { |t|
                                         if t["tags"]["language"] == "rus"
-                                            puts t["channel_layout"]
-                                            if t["channel_layout"] =~ /5[.]/
+                                            if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
                                                 stereo_converter = " -ac 2 "
                                             end
                                         end
