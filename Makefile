@@ -9,5 +9,8 @@ docker:
 	cp Dockerfile Dockerfile.tmp; \
 	docker build --network host -t "${DOCKER_NAME}" . ; \
 
-start:
+start start-docker:
 	./docker-start.bash 1
+
+start-no-docker:
+	cd web; ./start.bash -n
