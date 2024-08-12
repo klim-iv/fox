@@ -44,15 +44,16 @@ class Nginx
         @nginx_working_dir = "/tmp/nginx-work-dir-"
 
         begin
-            IO.popen("which nginx").each_line { |out|
+            p = IO.popen("which nginx").each_line { |out|
                 @nginx_bin = out.strip
             }
+            p.close
         rescue
         end
 
         if @nginx_bin.length > 0
             nginx_cfg_str = ""
-            IO.popen([@nginx_bin, "-V", :err => [:child, :out]]).each_line { |l|
+            p = IO.popen([@nginx_bin, "-V", :err => [:child, :out]]).each_line { |l|
                 if l =~ /configure/
                     nginx_cfg_str = l
                 end
@@ -66,6 +67,7 @@ class Nginx
                 }.keep_if { |a|
                 a.length > 0
             }
+            p.close
             @nginx_working_dir += "#{@port}"
             if !Dir.exist?(@nginx_working_dir)
                 Dir.mkdir(@nginx_working_dir)
