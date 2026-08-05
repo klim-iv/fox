@@ -200,10 +200,8 @@ class FoxApp < Sinatra::Base
                                 parsed = JSON.parse(j)
                                 parsed.each_value { |s|
                                     s.each { |t|
-                                        if t["tags"]["language"] == "rus"
-                                            if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
-                                                stereo_converter = " -ac 2 "
-                                            end
+                                        if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
+                                            stereo_converter = " -ac 2 "
                                         end
                                     }
                                 }
@@ -297,10 +295,8 @@ class FoxApp < Sinatra::Base
                                 parsed = JSON.parse(j)
                                 parsed.each_value { |s|
                                     s.each { |t|
-                                        if t["tags"]["language"] == "rus"
-                                            if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
-                                                stereo_converter = " -ac 2 "
-                                            end
+                                        if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
+                                            stereo_converter = " -ac 2 "
                                         end
                                     }
                                 }
@@ -395,10 +391,8 @@ class FoxApp < Sinatra::Base
                                 parsed = JSON.parse(j)
                                 parsed.each_value { |s|
                                     s.each { |t|
-                                        if t["tags"]["language"] == "rus"
-                                            if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
-                                                stereo_converter = " -ac 2 "
-                                            end
+                                        if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
+                                            stereo_converter = " -ac 2 "
                                         end
                                     }
                                 }
@@ -493,10 +487,8 @@ class FoxApp < Sinatra::Base
                                 parsed = JSON.parse(j)
                                 parsed.each_value { |s|
                                     s.each { |t|
-                                        if t["tags"]["language"] == "rus"
-                                            if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
-                                                stereo_converter = " -ac 2 "
-                                            end
+                                        if t["channels"] > 2 or !t.key?("channel_layout") or t["channel_layout"] =~ /5[.]/
+                                            stereo_converter = " -ac 2 "
                                         end
                                     }
                                 }
